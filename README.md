@@ -55,6 +55,54 @@ To run the application, you simply need to run the `app.py` script in this repos
 
 - **Docker:** The application uses docker to containerise the app and host the image on docker hub
 
+## Provisioning an AKS cluster with Terraform
+Prerequisites
+----
+You should have Terraform installed
+- Click on this [link](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) to install terraform on your operating system
+
+- Check that the correct version was installed
+```
+terraform -v
+```
+
+steps to creating the networking module
+1. create the directory and terraform files
+  ```
+  mkdir aks-terraform
+
+  cd aks-terraform
+
+  mkdir networking-module
+
+  cd networking-module
+
+  touch main.tf outputs.tf variables.tf
+```
+
+2. Define the variables to be used to provision the resources
+- **resource_group_name**: this will have the default name  for the network resource group which will be used in the resource group
+- **location**: this will specify the name of the location where the resources will be provisioned
+- **vnet_address_space**: this will soecify the address space for the virtual network where the network resources will be placed
+
+3. Define the following resources to be provisioned on azure
+- **Azure Resource Group**: This will contain the networking resources
+- **Virtual Network(VNET)**: This is the vnet for the aks cluster
+- **Control Plane Subnet**: This subnet will host the control plane components of the aks cluster
+- **Worker Node Subnet**: This will be the network sace for hosting the workder nodes of the cluster
+
+4. Define the output variables which will be accessed later on outside the network module
+- **vnet_id**: This will store the ID of the previously created VNet. This will be used within the cluster module to connect the cluster to the defined VNet. 
+- **control_plane_subnet_id**: This will store the ID of the control plane subnet within the VNet. This will be used to specify the subnet where the control plane components of the AKS cluster will be deployed to.
+- **worker_node_subnet_id**: This will store the ID of the worker node subnet within the VNet. This will be used to specify the subnet where the worker nodes of the AKS cluster will be deployed to.
+- **networking_resource_group_name**:  This will provide the name of the Azure Resource Group where the networking resources were provisioned in. This will be used to ensure the cluster module resources are provisioned within the same resource group.
+- **aks_nsg_id**: This will store the ID of the Network Security Group (NSG). This will be used to associate the NSG with the AKS cluster to specify inbound and outboud traffic rules
+
+5. Initialise the network module
+    ```
+    cd networking-module
+    terraform init
+    ```
 
 
 ## Contributors 
