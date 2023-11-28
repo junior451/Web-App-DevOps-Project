@@ -53,9 +53,13 @@ To run the application, you simply need to run the `app.py` script in this repos
 
 - **Database:** The application employs an Azure SQL Database as its database system to store order-related data.
 
+- **Docker:** The application uses docker to containerise the app and host the image on docker hub
+
+
+
 ## Contributors 
 
-- [Maya Iuga]([https://github.com/yourusername](https://github.com/maya-a-iuga))
+- [Junior Edwards](https://github.com/junior451)
 
 ## License
 
