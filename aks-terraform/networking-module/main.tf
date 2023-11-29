@@ -34,7 +34,7 @@ resource "azurerm_network_security_rule" "kube_apiserver" {
   name                        = "kube-apiserver"
   resource_group_name         = azurerm_resource_group.aks.name
   network_security_group_name = azurerm_network_security_group.aks_nsg.name
-  priority                    = 1002
+  priority                    = 1001
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
@@ -52,8 +52,8 @@ resource "azurerm_network_security_rule" "ssh_rule" {
   protocol                    = "Tcp"
   source_port_range           = "*"
   destination_port_range      = "22"
-  source_address_prefix       = "YOUR_PUBLIC_IP_ADDRESS"  # Replace with your public IP or IP range
+  source_address_prefix       = "86.159.15.179"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.networking.name
+  resource_group_name         = azurerm_resource_group.aks.name
   network_security_group_name = azurerm_network_security_group.aks_nsg.name
 }

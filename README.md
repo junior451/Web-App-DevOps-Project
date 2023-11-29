@@ -143,6 +143,26 @@ Steps to provisioning the worker nodes component of the aks-cluster
     terraform init
     ```
 
+Steps to create the main configuration file
+1. Define the terraform block: This specifies the Azure provider and sets the version to 3.0.0
+2. Define the provider block: This configures the azure provider. Inside the block, there is the features {} block which is used to enable specific provider features, in this is empty. The client_id, client_secret, subscription_id and tenant_id is generated using the following command
+```
+  az ad sp create-for-rbac --name myApp --role contributor --scopes /subscriptions/{your-subscription-id}/resourceGroups/{your-resource-group-name}
+```
+- Replace resource-group-name with a name of a resource group or create one in azure if it doesn't exist
+- The **subscription-id** can be found in azure under subscriptions
+- The **client_id** is the same as the appID from the generated credentials
+- The **client_secret** is the password from the generated credentials
+- The **tenent_id** represents the tenant frrom the generated credentials
+
+3. Use the networking module previously created to provision the network resources
+- source: The path to the networking module
+- define specific values for vairables in the networking module if neccessary
+
+4. Use the AKS Cluster module:
+- Define the input variables for the aks cluster which was previously defined in the aks cluster but werent giving specific values
+- resource_group_name, vnet_id, control_plane_subnet_id, worker_node_subnet_id, aks_nsg_id represents outputs from the networking module
+
 ## Contributors 
 
 - [Junior Edwards](https://github.com/junior451)
