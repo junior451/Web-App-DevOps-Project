@@ -66,7 +66,7 @@ You should have Terraform installed
 terraform -v
 ```
 
-steps to provisioning the networking component of the aks-cluster
+### Steps to provisioning the networking component of the aks-cluster
 1. create the directory and terraform files
 ```
   mkdir aks-terraform
@@ -104,8 +104,7 @@ steps to provisioning the networking component of the aks-cluster
     terraform init
     ```
 
-
-Steps to provisioning the worker nodes component of the aks-cluster
+### Steps to provisioning the worker nodes component of the aks-cluster
 1. create the directory and terraform files: inside the aks-terraform directory
 
 ```
@@ -143,7 +142,7 @@ Steps to provisioning the worker nodes component of the aks-cluster
     terraform init
     ```
 
-Steps to create the main configuration file
+### Steps to create the main configuration file
 1. Define the terraform block: This specifies the Azure provider and sets the version to 3.0.0
 2. Define the provider block: This configures the azure provider. Inside the block, there is the features {} block which is used to enable specific provider features, in this is empty. The client_id, client_secret, subscription_id and tenant_id is generated using the following command
 ```
@@ -162,6 +161,47 @@ Steps to create the main configuration file
 4. Use the AKS Cluster module:
 - Define the input variables for the aks cluster which was previously defined in the aks cluster but werent giving specific values
 - resource_group_name, vnet_id, control_plane_subnet_id, worker_node_subnet_id, aks_nsg_id represents outputs from the networking module
+
+## Kubernetes Deployment
+### Steps to define the Deployment and Service manifests
+1. In the application-manifest.yaml file, there is Deployment named flask-app-deployment and a Service named flask-app-service. Within the Deployment object:
+- apiVersion: apps/v1: This specifies
+- kind: Deployment: This speficies that this is a deployment object
+- metadata.name: flask-app-deployment: This specifies the name of the deployment
+- spec.replicas: 2: This specifies there will be 2 replica pods for the application deployment
+- spec.selector.matchLabels: This tells the deployment to select the pods with the label flask-app
+- template.metadata.labels: This gives the label flask-app to the pod which will then be selected by the deployment
+- template.spec.containers.name: This specifies the name of the container in the pod, in this case the name is flask-app-container
+- template.spec.containers.image: This specifies the image to be use to create the container, in this case junior451/devops-orders-project which is hosted on dockerhub
+- template.spec.containers.ports: This specifies that the container will run on port 5000
+- strategy.type: This specifes that the type of strategy to be used when updating the pods is a RollingUpdate, which allows one pod to be updated one at a time incrementently. This ensures the app has minimal or no downtime for internal use even during an update
+- strategy.rollingUpdate.maxUnavailable: 1: This allows one pod to be temporary unavailable whilst updating
+- strategy.rollingUpdate.maxUnavailable: 1: This allows one additional app to be created above the desired number of replicas
+
+2. Within the Service object:
+- kind: Service: This specifies that the object is a service
+- metadata.name: This specifies the name of the service
+- spec.selector.app: flask-app: This specifes the label of the pod this service should target
+- spec.ports: This specifies the service should use tcp protocol on port 80 for the IP address and to target port 5000 on the pods
+spec.type: This specifies that this service is a ClusterIP
+
+3. Testing and Validation
+- Run the following commands to check the pods and service have been deployed
+```
+kubectl get nodes
+kubectl get pods
+kubectl get services
+```
+- You can also check the pod and service has been deployed on the kubernetes cluster by viewing the workloads and services and ingress tabs within the aks-cluster resources in azure
+- You can run the app locally through port forwarding by running the followiing command
+```
+kubectl port-forward flask-app-deployment-6df7699b95-4rvqx 5000:5000
+```
+
+### Steps to distribute app to internal and external users without relying on port forwarding
+- To allow the app to be available for internal use, the best way is to use create a LoadBalancer service using a load balancer manifest file. This will allow the specification of the service as type load balancer, the port and the app targeted by the service. After the deployment, an external ip address for the app will be exposed which can then be shared with internal colleagues
+
+- The best way to expose the app to external users is to use an ingress controller, which will allow the hostname, the path, the targeted pod and the service port to be defined
 
 ## Contributors 
 
