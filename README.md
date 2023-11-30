@@ -203,6 +203,38 @@ kubectl port-forward flask-app-deployment-6df7699b95-4rvqx 5000:5000
 
 - The best way to expose the app to external users is to use an ingress controller, which will allow the hostname, the path, the targeted pod and the service port to be defined
 
+## Buiding the CI/CD Pipeline
+Within the azure-pipeline yaml file, there are various configurations for the pipeline
+- trigger: This specifies that the pipeline will use the main branch of the main repo to access files and create new files. The source repository refers to this repository.
+- pool: This specficies the ubuntu image the pipeline will use to run the run the build and release steps
+There are two steps which runs the build and release pipelines respectively
+- Task:Docker@2: This specifies a name to the build pipeline
+- Inside the Task: Docker@2, the containerRegistry specifies the service connection used to connect securely with docker hub. This can be created by generating a token on dockerhub and using the token as the password for the service connection, which can be found under project settings in azure devops
+- repository: This specifies the name of the image to be published on dockerhub
+command: 'buildAndPush': This specifies that the image will be built and push to dockerhub
+Dockerfile: '**/Dockerfile': This references the Dockerfile to be used for the image which is found in the root directory of the project
+tags: latest: This tags the image built on dockerhub as latest
+For the release pipeline
+- task: KubernetesManifest@1: This specifies the name of the release pipeline
+- action: 'deploy': This species the action is a deployment to the aks kubernetes cluster
+- connectionType: 'kubernetesServiceConnection': This specifies that the azure pipeline will access the cluster using a Kubernetes Service Connection
+- kubernetesServiceConnection: 'webapp-kuber-connection': This specifies the name of the service connection which was created under project settings
+- manifests: 'application-manifest.yaml': This specifies the manifest file to be used for the deployment which is located in the root directory of the repository
+
+### Steps to validate and test the app deployed
+- Check that the job has succeeded by checking the logs of the pipeline in azure devops
+- Run the following commands to check the pods and services are running
+```
+kubectl get pods
+kubectl get services
+```
+- Run the following command to test the application is running locally using port forwarding. Make sure the app can be accessed locally and the add new order function is working properly
+```
+kubectl port-forward flask-app-deployment-6df7699b95-4rvqx 5000:5000
+```
+
+
+
 ## Contributors 
 
 - [Junior Edwards](https://github.com/junior451)
