@@ -233,7 +233,38 @@ kubectl get services
 kubectl port-forward flask-app-deployment-6df7699b95-4rvqx 5000:5000
 ```
 
+## Monitoring the Cluster
+### Charts used to monitor the AKS Cluster
+- **Average Node CPU Usage**: 
+This Chart is used to monitor the average cpu usage of the nodes. In the chart, it shows the average cpu utilisation is currently 8%
+![Alt text](screenshots/image.png)
+- **Average Pod Count**
+This Chart is used to monitor the average pod count of the aks cluster. In the Chart, it shows there are currently 16 pods running in the whole aks cluster
+![Alt text](screenshots/image-1.png)
+- **Average Disk Usage**
+This Chart shows the average disk usage percentage for the nodes in the AKS cluster. It shows that currently, the disk usage is at 4.849%
+![Alt text](screenshots/image-2.png)
+- **Bytes Read and Written Per Second**
+This Chart is used to monitor both the bytes read and written per second. It shows that currently 3.39 bytes written per second and 18.46 kilobytes(18460 bytes) written per second
+![Alt text](screenshots/image-3.png)
 
+### Logs Analyzed through log analytics
+- **Average Node CPU Usage Percentage Per Minute**: This logs the nodes average cpu usage per minute. 
+![Alt text](screenshots/image-1_logs.png)
+- **Average Node Memory Usage Percentage Per Minute**: This logs the nodes average memory usage per minute
+![Alt text](screenshots/image_logs.png)
+- **Pod Counts With Phase**: This logs records the counts of pods under different phases, such as pending, Running or Terminating. 
+![Alt text](screenshots/image-2_logs.png)
+- **Find Warning Value in Container Logs**: This log is used to search for the value of "warning" in the log entries, which helps track potential issues or errors within the containers, and allows for troubleshooting
+![Alt text](screenshots/image-3_logs.png)
+- **Monitoring Kubernetes Events**: This log allows for monitoring of kubernetes events such as pod schenduling, scaling events and errors. It allows the tracking of the health and stability of the cluster
+![Alt text](screenshots/image-5_logs.png)
+
+### Alerts configuration details
+- The Alarm used is set to trigger when the disk usage percentage on nodes have reached more than 80%, indicitating the cpu is been heavily utilised, which affects the application performance. The alarm is set to check every 5 minuite with a lookback period of 15 minutes. The notification is set up to send to my email address.
+
+- **Mitigation strategies when the alarm is triggered**
+The first step is to check the metrics and the logs to find out the severity of the alarm triggered, to determine the actual disk usage percentage. For example, if the disk percentage is aroung 95% then that would require an immediate action. The specific action might include deploying additonal nodes in the cluster, running the pods and apps in the new clusters and spreading the traffic between the old and new nodes. The next step is to provide a clear documentation of each alert and the action taken to resolbve it. This will be valuable incase similar issues happens in the future. After documentation, it is important to conduct a post-incident review to understand the root cause of the issues and come up with ways to prevent that in the future
 
 ## Contributors 
 
