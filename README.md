@@ -55,6 +55,56 @@ To run the application, you simply need to run the `app.py` script in this repos
 
 - **Docker:** The application uses docker to containerise the app and host the image on docker hub
 
+## Containerising the app
+Prerequisites
+----
+You should have Docker Engine and Docker CLI installed
+
+Steps to build a docker image of the application
+1. Clone the repo
+```
+git clone git@github.com:junior451/Web-App-DevOps-Project.git
+```
+
+2. Build the image
+```
+cd Web-App-DevOps-Project
+docker build -t devops-orders-project
+```
+
+3. Run the following command to build the docker image
+```
+docker run -p 5000:5000 devops-orders-project
+access it at https://localhost:5000
+```
+
+4. Tag the image and push it to dockerhub
+```
+docker tag devops-orders-project <docker-hub-username/devops-orders-project>:latest
+```
+
+5. You can also pull the image from dockerhub without building if its already been pushed to dockerhub
+
+```
+docker pull junior451/devops-orders-project:latest
+docker run -p 5000:5000 junior451/devops-orders-project
+```
+
+## Cleanup
+
+### Remove containers
+```
+docker ps -a
+docker rm container-id
+```
+
+**Remove images**
+
+```
+docker images -a
+docker rmi image-id
+```
+
 ## Provisioning an AKS cluster with Terraform
 Prerequisites
 ----
@@ -266,6 +316,51 @@ This Chart is used to monitor both the bytes read and written per second. It sho
 - **Mitigation strategies when the alarm is triggered**
 The first step is to check the metrics and the logs to find out the severity of the alarm triggered, to determine the actual disk usage percentage. For example, if the disk percentage is aroung 95% then that would require an immediate action. The specific action might include deploying additonal nodes in the cluster, running the pods and apps in the new clusters and spreading the traffic between the old and new nodes. The next step is to provide a clear documentation of each alert and the action taken to resolbve it. This will be valuable incase similar issues happens in the future. After documentation, it is important to conduct a post-incident review to understand the root cause of the issues and come up with ways to prevent that in the future
 
+## Secrets Management and AKS Integration with Azure Key Valut
+Azure Key Vault provides a robust solution for secure storage and management of sensitive information. This is where the webapp secrets, such as the database server, database name, username and password will be created in order to avoid hardcoding that into the app sourcecode itself. In this case, I created a key vault called kub-cluster-key-vault. The Vault URI allows other clents to access and interact with the resources stored in the key vault. I have assigned the **Key Vault Administrator** role to myself, which grants my user's full control over the key vault, including managing access policies, configuiring advanced settings and performing operations within the key vault. 
+![Alt text](screenshots/image_vault.png) 
+
+### The information stored in the Key Vault 
+- **Database Server**: This provides the unique url address to connect to the database server created for the app
+- **Dataabse Name**: This is the name of the database created
+- **Username**: This is the unique username for a user to login to the database
+- **Password**: This is the password used to login into the database
+
+### Steps to integrate AKS with Key Vault
+- Since the cluster has already been created, run the following command to enable managed identity for the cluster. The resource group and name should be replaced with the cluster's resource group and the clusters name
+```
+az aks update --resource-group <resource-group> --name <aks-cluster-name> --enable-managed-identity
+```
+- Run the following to get information about the managed cluster created in order to assign a permission role to it. 
+```
+az aks show --resource-group <resource-group> --name <aks-cluster-name> --query identityProfile
+``` 
+- Use the following command to assign a "Key Valuts Secrets Officer" role to the managed Identity created earlier. Replace  managed-identity-client-id with the client id from the output earlier and the key vault resource group name and key vault name.
+```
+az role assignment create --role "Key Vault Secrets Officer" \
+  --assignee <managed-identity-client-id> \
+  --scope /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.KeyVault/vaults/{key-vault-name}
+```
+
+### Modifications made to the application code
+![Alt text](screenshots/image-1_vault.png)
+- The first step is install the azure-identity and azure-keyvaluts-secrets library using pip
+```
+pip install azure-identity
+pip install azure-keyvault-secrets
+```
+- Import ManagedIdentityCredential from azure-indentity and SecretClient from  azure-keyvaluts-secrets
+![Alt text](screenshots/image-2_vault.png)
+- Create secret client using the keyvault url and managedIdentityCredential
+![Alt text](screenshots/image-3_vault.png)
+- Use the secret client to retrive the value of each of the secrets in the key vault and store it in their respective variables
+![Alt text](screenshots/image-4_vault.png)
+- Finally assign each of the secrets value to the correspnding database connection credential
+![Alt text](screenshots/image-5_vault.png)
+
+
+## DevOps Pipeline Architecture
+![Alt text](screenshots/pipeline-architecture.png)
 ## Contributors 
 
 - [Junior Edwards](https://github.com/junior451)
