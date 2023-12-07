@@ -20,8 +20,6 @@ steps:
 - task: KubernetesManifest@1
   inputs:
     action: 'deploy'
-    connectionType: 'azureResourceManager'
-    azureSubscriptionConnection: 'Kwabena Edwards DevOps(4f4f3acd-6d28-4d0c-a47d-7ee8d3c5d6d4)'
-    azureResourceGroup: 'networking-resource-group'
-    kubernetesCluster: 'terraform-aks-cluster'
+    connectionType: 'kubernetesServiceConnection'
+    kubernetesServiceConnection: 'webapp-kuber-connection'
     manifests: 'application-manifest.yaml'
